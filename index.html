@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>聲控讀稿機</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="讀稿機">
+<meta name="theme-color" content="#0a0c0f">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAD3UlEQVR4Xu3dMXLTQBQGYIWhYpihtu/AHejoqHNEajo67sAd7GtQaIbJJFG0b6Vd7Yu+7wCy/Pb3L3mFw8Onz18meM0HY2GJcCAcxGkONAdxmgPNQZzmQHMQpznQHMRpDjQHcZoDzUGc5kBzEKc50BzEaQ40B3GaA81BnOZAcxCnOdAcxGkONAdxmgPNQZzmQHMQpznQHMRpDjQHcZoDzUGc5kBzEKc50BzEaQ4Wfew2m2/ff3R7rXT+/P414Dk/dPhfE8Si0GgRaX5ZkYxyo82qbThGe7fjG2pibcNBag3DMdSHIJFx5tYwHGQnHCwSDoSDuIbNMdqWThbjzK1hOMiubTjG+RBkMdTE2oZjmsZ6t4MbKhnT1OXB22ycvZ0BjRaLWY+nsiTV/LJCXsLBIuFAOIjTHGgO4jQHmoM4zYHmIM4v3pLp+RSmx7MVj9x21ycize85JKOFPlNtG44+7+GcOsy2bThIrWE4OkT75FpPuGE4yE44sAlGnObgiObos1FzZq0nrDk4ojn8oqmp1rUxTe2bo8N7OKE+U+3x4G3WesfmJPrEYtYvHKTjhpSDbkhJTXOgOYjTHNQ2x+3nV8N7x95e3/XmkI/3anVl18MxTetHIZ3VZAS2z0uORRaFqxn4UdN8xOvj3ywj4KXCWMwC4Zjdfn6ty8f9frNae7lcrhWHCiUjcFl5Kvoa9/tNMvZVMdLoqlWGI3SLKhbtlM+2Ihn14SjMR/nZU6dkwnXJ2BSOwnxwrOpk1NyQPvPGV5iSULPd/X579f50SyxmRZtgq7afB/vaZUX2CYdLzFB2ScZuzWFzbCh1G1Ev7dMce50Ne9llRcI7pM+8cRKXy9U9aQdLu6Xz0my5xGxqjl3iSVNb1qg+HCWvWvcIgHIlEy5ZqVdVhqP89UrOnjrlsy1fr6dqwhF9pcvlWv42KFEx0uiq1eyQVrzGTD4Od338G7o/DXxbqY4F4wh9hSm9rEjGe1K4mkXhKDwWiZSs6Xo4So5CRqsr608wsGi9OTgt4UBzEKc50BzEBXZINzrhv+3I/sSgx1fZE8biqbwRaX7PcfJkTFPiCbQNh2TMks6hbThIrWE4kn5cGsk4jYbhIDvhwCYYcZqDI5oj7+ZPCxmnoTk4ojn8HOG/jLWx559gWJJ0LjvKO4EeD95mGXeBNsobi1m/cJCOG1IOuiElNc2B5iBOc6A5iNMcaA7iNAeagzjNgeYgTnOgOYjTHGgO4jQHmoM4zYHmIE5zoDmI0xxoDuI0B5qDOM2B5iBOc6A5iNMcaA7iNAeagzjNgeYgTnOgOYjTHGgO4jQHi/4Bo0XMyWbC+swAAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAD3UlEQVR4Xu3dMXLTQBQGYIWhYpihtu/AHejoqHNEajo67sAd7GtQaIbJJFG0b6Vd7Yu+7wCy/Pb3L3mFw8Onz18meM0HY2GJcCAcxGkONAdxmgPNQZzmQHMQpznQHMRpDjQHcZoDzUGc5kBzEKc50BzEaQ40B3GaA81BnOZAcxCnOdAcxGkONAdxmgPNQZzmQHMQpznQHMRpDjQHcZoDzUGc5kBzEKc50BzEaQ4Wfew2m2/ff3R7rXT+/P414Dk/dPhfE8Si0GgRaX5ZkYxyo82qbThGe7fjG2pibcNBag3DMdSHIJFx5tYwHGQnHCwSDoSDuIbNMdqWThbjzK1hOMiubTjG+RBkMdTE2oZjmsZ6t4MbKhnT1OXB22ycvZ0BjRaLWY+nsiTV/LJCXsLBIuFAOIjTHGgO4jQHmoM4zYHmIM4v3pLp+RSmx7MVj9x21ycize85JKOFPlNtG44+7+GcOsy2bThIrWE4OkT75FpPuGE4yE44sAlGnObgiObos1FzZq0nrDk4ojn8oqmp1rUxTe2bo8N7OKE+U+3x4G3WesfmJPrEYtYvHKTjhpSDbkhJTXOgOYjTHNQ2x+3nV8N7x95e3/XmkI/3anVl18MxTetHIZ3VZAS2z0uORRaFqxn4UdN8xOvj3ywj4KXCWMwC4Zjdfn6ty8f9frNae7lcrhWHCiUjcFl5Kvoa9/tNMvZVMdLoqlWGI3SLKhbtlM+2Ihn14SjMR/nZU6dkwnXJ2BSOwnxwrOpk1NyQPvPGV5iSULPd/X579f50SyxmRZtgq7afB/vaZUX2CYdLzFB2ScZuzWFzbCh1G1Ev7dMce50Ne9llRcI7pM+8cRKXy9U9aQdLu6Xz0my5xGxqjl3iSVNb1qg+HCWvWvcIgHIlEy5ZqVdVhqP89UrOnjrlsy1fr6dqwhF9pcvlWv42KFEx0uiq1eyQVrzGTD4Od338G7o/DXxbqY4F4wh9hSm9rEjGe1K4mkXhKDwWiZSs6Xo4So5CRqsr608wsGi9OTgt4UBzEKc50BzEBXZINzrhv+3I/sSgx1fZE8biqbwRaX7PcfJkTFPiCbQNh2TMks6hbThIrWE4kn5cGsk4jYbhIDvhwCYYcZqDI5oj7+ZPCxmnoTk4ojn8HOG/jLWx559gWJJ0LjvKO4EeD95mGXeBNsobi1m/cJCOG1IOuiElNc2B5iBOc6A5iNMcaA7iNAeagzjNgeYgTnOgOYjTHGgO4jQHmoM4zYHmIE5zoDmI0xxoDuI0B5qDOM2B5iBOc6A5iNMcaA7iNAeagzjNgeYgTnOgOYjTHGgO4jQHi/4Bo0XMyWbC+swAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#0a0c0f;--panel:#13171c;--raise:#1b2027;--line:#262d36;
+  --fg:#f1f3f5;--muted:#8b97a3;--dim:#4a535d;--cue:#f0b43c;--cue-ink:#1a1204;--live:#ec4f4f;
+  --ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --gl:max(16px,env(safe-area-inset-left,0px));--gr:max(16px,env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:15px;overflow:hidden;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cue);outline-offset:2px}
+[hidden]{display:none!important}
+
+.app{height:100%;display:grid;grid-template-rows:auto 1fr;padding-top:env(safe-area-inset-top,0px)}
+header{display:flex;align-items:center;gap:10px;min-height:52px;padding-block:8px;padding-left:var(--gl);padding-right:var(--gr);border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:17px;font-weight:700;letter-spacing:.03em;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tally{width:10px;height:10px;border-radius:50%;background:var(--dim);flex:none;transition:background .2s}
+.tally.on{background:var(--live);box-shadow:0 0 10px #ec4f4f99}
+.tally.run{background:var(--cue)}
+.icon-btn{border:0;background:none;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--fg);flex:none}
+.icon-btn:active{background:var(--raise)}
+.icon-btn svg{width:22px;height:22px}
+.btn{border:1px solid var(--line);background:var(--raise);border-radius:10px;padding:10px 14px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--cue);color:var(--cue-ink);border-color:var(--cue);font-weight:700}
+.btn.ghost{background:none}
+.btn.danger{border-color:#ec4f4f66;color:#ff8a8a}
+main{min-height:0;position:relative}
+.view{position:absolute;inset:0}
+.pad{overflow:auto;-webkit-overflow-scrolling:touch;padding-block:16px calc(24px + env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr)}
+.wrap{max-width:760px;margin:0 auto;display:grid;gap:14px}
+
+/* home */
+.list{display:grid;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center}
+.card .t{font-weight:700;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:none;text-align:left;padding:0}
+.card .meta{grid-column:1;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.card .meta b{font-family:var(--mono);font-weight:500;color:var(--fg)}
+.card .acts{grid-column:2;grid-row:1/3;display:flex;gap:6px}
+.card .acts .btn{padding:8px 12px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:40px 10px;line-height:1.8}
+.section-label{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.backup{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.note{color:var(--muted);font-size:13px;line-height:1.7;margin:0}
+
+/* editor */
+.title-in{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:18px;font-weight:700}
+textarea{width:100%;min-height:55vh;resize:vertical;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:17px;line-height:1.8}
+.title-in:focus,textarea:focus{border-color:var(--cue);outline:none}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.stats{color:var(--muted);font-size:14px;flex:1 1 200px}
+.stats b{font-family:var(--mono);font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums}
+
+/* prompter */
+.prompter{display:grid;grid-template-rows:1fr auto;background:#000}
+.stage{position:relative;min-height:0;overflow:hidden}
+.scroller{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+.text{margin:0 auto;font-weight:500;overflow-wrap:anywhere;line-break:strict}
+.text p{margin:0 0 .35em}
+.text p:empty{height:.5em}
+.text span{transition:color .25s}
+.text span.done{color:var(--dim)}
+.text span.cur{box-shadow:inset 0 -.12em 0 var(--cue)}
+.text.mirror{transform:scaleX(-1)}
+.fade{position:absolute;left:0;right:0;pointer-events:none}
+.fade.top{top:0;height:20%;background:linear-gradient(#000,#0000)}
+.fade.bot{bottom:0;height:16%;background:linear-gradient(#0000,#000)}
+.guide{position:absolute;left:0;right:0;height:0;pointer-events:none;border-top:1px dashed #f0b43c55}
+.guide::before,.guide::after{content:"";position:absolute;top:-9px;border:9px solid transparent}
+.guide::before{left:max(2px,env(safe-area-inset-left,0px));border-left:14px solid var(--cue)}
+.guide::after{right:max(2px,env(safe-area-inset-right,0px));border-right:14px solid var(--cue)}
+.heard{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:calc(100% - 32px);background:#13171ce6;border:1px solid var(--line);
+  border-radius:999px;padding:6px 14px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:8px;align-items:center}
+.heard .dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:none;animation:pulse 1.2s infinite}
+.heard em{font-style:normal;color:var(--fg);overflow:hidden;text-overflow:ellipsis}
+@keyframes pulse{50%{opacity:.35}}
+.deck{background:var(--panel);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;
+  padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr)}
+.group{display:flex;align-items:center;gap:8px}
+.ctl{border:1px solid var(--line);background:var(--raise);border-radius:10px;height:42px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}
+.ctl svg{width:20px;height:20px;flex:none}
+.ctl.play[aria-pressed="true"]{background:var(--cue);border-color:var(--cue);color:var(--cue-ink);font-weight:700}
+.ctl.voice[aria-pressed="true"]{border-color:var(--live);color:#fff;background:#3a1416}
+.slider{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-width:0;flex:1 1 220px}
+.slider input{flex:1;min-width:0;accent-color:var(--cue)}
+.slider output{font-family:var(--mono);color:var(--fg);font-variant-numeric:tabular-nums;min-width:4.6em;text-align:right;font-size:13px}
+.drawer{position:absolute;left:var(--gl);right:var(--gr);bottom:10px;max-width:380px;margin-left:auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:16px;display:grid;gap:14px;box-shadow:0 20px 50px #000c;z-index:3;max-height:calc(100% - 20px);overflow:auto}
+.drawer h3{margin:0;font-size:13px;letter-spacing:.08em;color:var(--muted);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.drawer .slider{flex:none}
+.drawer .slider span{flex:none;width:5.5em;color:var(--fg);font-size:14px}
+.check{display:flex;align-items:center;justify-content:space-between;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--cue)}
+.keys{font-size:12px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:10px}
+kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px}
+
+/* focus mode: hide header + deck, tap screen to bring the deck back */
+.app.focus{grid-template-rows:1fr}
+.app.focus header{display:none}
+.app.focus .deck{display:none}
+.app.focus.show-deck .deck{display:flex}
+.app.focus .stage{padding-top:0}
+.exit-focus{position:absolute;top:10px;right:var(--gr);z-index:4}
+.toast{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--raise);border:1px solid var(--line);
+  border-radius:10px;padding:10px 16px;font-size:14px;z-index:20;width:max-content;max-width:calc(100% - 32px);box-shadow:0 10px 30px #000a;line-height:1.6}
+.confirm{position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:30;padding:20px}
+.confirm .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;max-width:340px;width:100%;display:grid;gap:14px}
+.confirm p{margin:0;line-height:1.7}
+@media (max-width:430px){#focusLbl{display:none}.ctl{padding:0 10px}.deck .group{flex-wrap:wrap}}
+.prompter,.deck{max-width:100vw;overflow-x:hidden}
+@media (prefers-reduced-motion:reduce){.heard .dot{animation:none}.text span{transition:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <button class="icon-btn" id="backBtn" aria-label="回首頁" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <i class="tally" id="tally"></i>
+    <h1 id="hTitle">聲控讀稿機</h1>
+    <button class="icon-btn" id="editBtn" aria-label="編輯這份稿" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button>
+    <button class="btn primary" id="newBtn">＋ 新稿件</button>
+  </header>
+
+  <main>
+    <!-- home -->
+    <section class="view pad" id="vHome">
+      <div class="wrap">
+        <div class="section-label">我的稿件</div>
+        <div class="list" id="list"></div>
+        <div class="backup">
+          <button class="btn ghost" id="exportBtn">匯出備份</button>
+          <label class="btn ghost" for="importIn">匯入備份</label>
+          <input type="file" id="importIn" accept=".json,application/json" hidden>
+        </div>
+        <p class="note">稿件存在這支手機上。加到主畫面的讀稿機和 Safari 裡的是分開存的，換手機或換開啟方式時，用「匯出備份／匯入備份」搬過去。</p>
+      </div>
+    </section>
+
+    <!-- editor -->
+    <section class="view pad" id="vEdit" hidden>
+      <div class="wrap">
+        <input class="title-in" id="titleIn" placeholder="稿件名稱，例如：EP58 定期定額" aria-label="稿件名稱">
+        <textarea id="bodyIn" spellcheck="false" placeholder="貼上稿子。空一行就是換段。" aria-label="稿件內容"></textarea>
+        <div class="row">
+          <div class="stats" id="stats"></div>
+          <button class="btn danger" id="delBtn">刪除</button>
+          <button class="btn primary" id="goBtn">開始提詞</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- prompter -->
+    <section class="view prompter" id="vPrompt" hidden>
+      <div class="stage" id="stage">
+        <div class="scroller" id="scroller"><div class="text" id="text"></div></div>
+        <div class="fade top"></div><div class="fade bot"></div>
+        <div class="guide" id="guide"></div>
+        <div class="heard" id="heard" hidden><i class="dot"></i><span>聽到：</span><em id="heardText">（等你開口）</em></div>
+        <div class="drawer" id="drawer" hidden>
+          <h3>顯示設定 <button class="icon-btn" id="closeDrawer" aria-label="關閉"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
+          <label class="slider"><span>字級</span><input id="sFont" type="range" min="24" max="140" step="2"><output id="oFont"></output></label>
+          <label class="slider"><span>行距</span><input id="sLh" type="range" min="1.2" max="2.2" step="0.05"><output id="oLh"></output></label>
+          <label class="slider"><span>文字寬度</span><input id="sWidth" type="range" min="50" max="100" step="2"><output id="oWidth"></output></label>
+          <label class="slider"><span>提示線位置</span><input id="sGuide" type="range" min="15" max="60" step="1"><output id="oGuide"></output></label>
+          <label class="slider"><span>聲控跟隨</span><input id="sEase" type="range" min="1" max="10" step="1"><output id="oEase"></output></label>
+          <label class="check">鏡像翻轉（提詞玻璃用）<input id="sMirror" type="checkbox"></label>
+          <div class="keys">點稿子上任何一個字，就從那裡開始。<br>專注模式中，點一下畫面可叫出／收起控制列。<br>電腦鍵盤：<kbd>空白</kbd> 播放 <kbd>↑</kbd><kbd>↓</kbd> 速度 <kbd>V</kbd> 聲控 <kbd>F</kbd> 專注</div>
+        </div>
+      </div>
+      <div class="deck">
+        <div class="group">
+          <button class="ctl play" id="playBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><path d="M7 5v14l12-7z"/></svg><span id="playLbl">播放</span></button>
+          <button class="ctl voice" id="voiceBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="voiceLbl">聲控</span></button>
+          <button class="ctl" id="topBtn" aria-label="回到開頭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h14M12 20V9M7 13l5-5 5 5"/></svg></button>
+          <button class="ctl" id="setBtn" aria-label="顯示設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+          <button class="ctl" id="focusBtn" aria-label="全螢幕"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span id="focusLbl">全螢幕</span></button>
+        </div>
+        <label class="slider" id="speedWrap"><span>速度</span><input id="sSpeed" type="range" min="100" max="420" step="10"><output id="oSpeed"></output></label>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="confirm" id="confirm" hidden><div class="box"><p id="confirmMsg"></p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="cNo">取消</button><button class="btn danger" id="cYes">確定刪除</button></div></div></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem('tp:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('tp:'+k,JSON.stringify(v))}catch(e){toast('儲存失敗，手機空間可能不足')}}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+const SAMPLE=`大家好，歡迎回到頻道。今天我們要聊的是，為什麼越來越多人開始做定期定額。
+
+很多人覺得投資要先看準時機，等市場跌下來再進場。可是實際上，真正能準確抓到低點的人非常少。
+
+定期定額的好處在於，它把什麼時候買這個問題拿掉了。每個月固定投入同樣的金額，市場高的時候買得少，市場低的時候買得多，長期下來平均成本會被拉平。
+
+當然，它也不是萬靈丹。如果選到的標的本身長期往下走，定期定額只會讓你越買越多賠錢的東西。所以挑對標的，比挑對時機更重要。
+
+下一段，我們來看新手最常犯的三個錯誤。`;
+
+const phone=window.innerWidth<600;
+const S=Object.assign({cpm:240,font:phone?36:56,lh:1.5,width:phone?100:86,guide:30,mirror:false,ease:5},store.get('settings',{}));
+const saveS=()=>store.set('settings',S);
+let docs=store.get('scripts',null);
+if(!docs){docs=[{id:uid(),title:'範例稿（可刪除）',body:SAMPLE,updated:Date.now()}];store.set('scripts',docs);}
+const saveDocs=()=>store.set('scripts',docs);
+let cur=null; // current doc
+
+const countChars=t=>[...t].filter(c=>/[\p{L}\p{N}]/u.test(c)).length;
+const dur=n=>{const s=Math.round(n/S.cpm*60);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const fmtDate=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- views ---------- */
+let view='home';
+function setView(v){
+  if(view==='prompt'&&v!=='prompt'){stopAll();setFocus(false);}
+  view=v;
+  $('#vHome').hidden=v!=='home';$('#vEdit').hidden=v!=='edit';$('#vPrompt').hidden=v!=='prompt';
+  $('#backBtn').hidden=v==='home';$('#newBtn').hidden=v!=='home';$('#editBtn').hidden=v!=='prompt';
+  $('#hTitle').textContent=v==='home'?'聲控讀稿機':(cur&&cur.title)||'未命名稿件';
+  if(v==='home')renderList();
+  if(v==='edit'){$('#titleIn').value=cur.title;$('#bodyIn').value=cur.body;updateStats();}
+  if(v==='prompt'){render();layout();jumpTo(0,true);}
+}
+function renderList(){
+  docs.sort((a,b)=>b.updated-a.updated);
+  const l=$('#list');
+  if(!docs.length){l.innerHTML='<div class="empty">還沒有稿件。<br>按右上角「＋ 新稿件」貼上第一份稿子。</div>';return;}
+  l.innerHTML=docs.map(d=>{const n=countChars(d.body);return `<div class="card" data-id="${d.id}">
+    <button class="t" data-act="play">${esc(d.title||'未命名稿件')}</button>
+    <div class="meta"><b>${n}</b> 字 · 約 <b>${dur(n)}</b> · ${fmtDate(d.updated)}</div>
+    <div class="acts"><button class="btn ghost" data-act="edit">編輯</button><button class="btn primary" data-act="play">提詞</button></div></div>`}).join('');
+}
+$('#list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  cur=docs.find(d=>d.id===b.closest('.card').dataset.id);if(!cur)return;
+  setView(b.dataset.act==='edit'?'edit':'prompt');
+});
+$('#newBtn').onclick=()=>{cur={id:uid(),title:'',body:'',updated:Date.now()};docs.push(cur);saveDocs();setView('edit');setTimeout(()=>$('#titleIn').focus(),50);};
+$('#backBtn').onclick=()=>{if(view==='edit'&&cur&&!cur.title&&!cur.body.trim()){docs=docs.filter(d=>d!==cur);saveDocs();}setView('home');};
+$('#editBtn').onclick=()=>setView('edit');
+$('#goBtn').onclick=()=>{if(!cur.body.trim()){toast('先貼上稿子內容');return;}setView('prompt');};
+let saveT;
+function onEdit(){cur.title=$('#titleIn').value;cur.body=$('#bodyIn').value;cur.updated=Date.now();clearTimeout(saveT);saveT=setTimeout(saveDocs,300);updateStats();}
+$('#titleIn').addEventListener('input',onEdit);$('#bodyIn').addEventListener('input',onEdit);
+function updateStats(){const n=countChars(cur?cur.body:'');$('#stats').innerHTML=`<b>${n}</b> 字　以 <b>${S.cpm}</b> 字/分 約 <b>${dur(n)}</b>`;}
+$('#delBtn').onclick=()=>ask(`要刪除「${cur.title||'未命名稿件'}」嗎？刪掉就找不回來。`,()=>{docs=docs.filter(d=>d!==cur);saveDocs();setView('home');});
+function ask(msg,yes){$('#confirmMsg').textContent=msg;$('#confirm').hidden=false;$('#cYes').onclick=()=>{$('#confirm').hidden=true;yes();};$('#cNo').onclick=()=>$('#confirm').hidden=true;}
+
+/* backup */
+$('#exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:'讀稿機',v:1,scripts:docs,settings:S},null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const d=new Date();a.download=`讀稿機備份-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+};
+$('#importIn').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const j=JSON.parse(r.result);const list=Array.isArray(j)?j:j.scripts;if(!Array.isArray(list))throw 0;
+    let added=0;list.forEach(x=>{if(!x||typeof x.body!=='string')return;const ex=docs.find(d=>d.id===x.id);
+      if(ex){if((x.updated||0)>ex.updated)Object.assign(ex,x);}else{docs.push({id:x.id||uid(),title:String(x.title||''),body:x.body,updated:x.updated||Date.now()});added++;}});
+    saveDocs();renderList();toast(`匯入完成，新增 ${added} 份稿件`);}catch(err){toast('這個檔案不是讀稿機的備份');}
+    e.target.value='';};
+  r.readAsText(f);
+};
+
+/* ---------- render script ---------- */
+const scroller=$('#scroller'),textEl=$('#text');
+let spans=[],order=[],normChars=[],normStr='',cursorOrig=0,doneUpTo=0,curSpan=null,body='';
+const normCh=ch=>/[\p{L}\p{N}]/u.test(ch)?ch.toLowerCase():'';
+function render(){
+  body=cur?cur.body:'';
+  textEl.textContent='';spans=new Array(body.length).fill(null);order=[];normChars=[];
+  let p=document.createElement('p');const frag=document.createDocumentFragment();
+  for(let i=0;i<body.length;i++){
+    const ch=body[i];
+    if(ch==='\n'){frag.appendChild(p);p=document.createElement('p');continue;}
+    const s=document.createElement('span');s.textContent=ch;s.dataset.i=i;p.appendChild(s);spans[i]=s;order.push(s);
+    const n=normCh(ch);if(n)normChars.push({c:n,i});
+  }
+  frag.appendChild(p);textEl.appendChild(frag);
+  normStr=normChars.map(x=>x.c).join('');doneUpTo=0;curSpan=null;
+}
+function applyStyle(){textEl.style.fontSize=S.font+'px';textEl.style.lineHeight=S.lh;textEl.style.width=S.width+'%';textEl.classList.toggle('mirror',S.mirror);
+  textEl.style.paddingLeft=S.width>=100?'max(16px,env(safe-area-inset-left,0px))':'0';textEl.style.paddingRight=S.width>=100?'max(16px,env(safe-area-inset-right,0px))':'0';}
+let guidePx=0,pxPerChar=1;
+function layout(){
+  applyStyle();const h=scroller.clientHeight;guidePx=h*S.guide/100;
+  textEl.style.paddingTop=guidePx+'px';textEl.style.paddingBottom=(h-guidePx+40)+'px';
+  $('#guide').style.top=guidePx+'px';
+  pxPerChar=Math.max(.5,(textEl.offsetHeight-h)/Math.max(1,order.length));
+}
+function idxAtGuide(){
+  if(!order.length)return 0;const y=scroller.scrollTop+guidePx;let lo=0,hi=order.length-1;
+  while(lo<hi){const m=(lo+hi)>>1,s=order[m];if(s.offsetTop+s.offsetHeight<y)lo=m+1;else hi=m;}
+  return +order[lo].dataset.i;
+}
+function topFor(i){let s=spans[i];if(!s){for(let k=i;k<spans.length&&!s;k++)s=spans[k];for(let k=i;k>=0&&!s;k--)s=spans[k];}return s?s.offsetTop+s.offsetHeight/2-guidePx:0;}
+function nextSpan(i){for(let k=i;k<spans.length;k++)if(spans[k]&&normCh(body[k]))return spans[k];return null}
+function markDone(upTo){
+  const a=Math.min(doneUpTo,upTo),b=Math.max(doneUpTo,upTo);
+  for(let i=a;i<b&&i<spans.length;i++){const s=spans[i];if(s)s.classList.toggle('done',i<upTo);}
+  doneUpTo=upTo;const n=nextSpan(upTo);if(curSpan!==n){curSpan&&curSpan.classList.remove('cur');n&&n.classList.add('cur');curSpan=n;}
+}
+function normFromOrig(o){let lo=0,hi=normChars.length;while(lo<hi){const m=(lo+hi)>>1;if(normChars[m].i<o)lo=m+1;else hi=m;}return lo}
+const origFromNorm=n=>n<=0?0:normChars[n-1].i+1;
+
+/* ---------- motion ---------- */
+let mode='idle',playing=false,posF=0,easeTarget=null,userUntil=0,normPos=0;
+function jumpTo(i,instant){
+  cursorOrig=i;normPos=normFromOrig(i);markDone(i);heardBuf='';partial='';
+  const t=Math.max(0,topFor(i));if(instant){scroller.scrollTop=t;posF=scroller.scrollTop;easeTarget=null;}else easeTarget=t;
+}
+let lastT=performance.now();
+function tick(now){
+  const dt=Math.min(.1,(now-lastT)/1000);lastT=now;
+  if(view==='prompt'&&order.length){
+    if(Math.abs(scroller.scrollTop-posF)>3)posF=scroller.scrollTop;
+    const maxTop=scroller.scrollHeight-scroller.clientHeight;
+    if(now>=userUntil){
+      if(mode==='voice'){const t=Math.max(0,topFor(Math.max(0,cursorOrig-1)));posF+=(t-posF)*(1-Math.pow(1-S.ease*.018,dt*60));scroller.scrollTop=posF;}
+      else if(playing){posF+=S.cpm/60*pxPerChar*dt;scroller.scrollTop=posF;if(posF>=maxTop-1)setPlaying(false);}
+      else if(easeTarget!=null){posF+=(easeTarget-posF)*(1-Math.pow(.82,dt*60));scroller.scrollTop=posF;if(Math.abs(easeTarget-posF)<1)easeTarget=null;}
+      if(mode!=='voice'){cursorOrig=idxAtGuide();markDone(cursorOrig);}
+    }
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+let dragged=false;
+const userMoved=()=>{dragged=true;userUntil=performance.now()+1200;easeTarget=null;if(mode==='voice')setTimeout(resync,1250);};
+scroller.addEventListener('wheel',userMoved,{passive:true});
+scroller.addEventListener('touchmove',userMoved,{passive:true});
+scroller.addEventListener('touchstart',()=>{dragged=false},{passive:true});
+function resync(){if(mode==='voice'&&performance.now()>=userUntil){cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);heardBuf='';partial='';markDone(cursorOrig);}}
+$('#stage').addEventListener('click',e=>{
+  if(e.target.closest('.drawer'))return;
+  if($('#app').classList.contains('focus')){$('#app').classList.toggle('show-deck');requestAnimationFrame(relayout);return;}
+  const s=e.target.closest('span[data-i]');if(s&&!dragged)jumpTo(+s.dataset.i,false);
+});
+
+/* ---------- auto play ---------- */
+function setPlaying(v){
+  playing=v;
+  if(v){if(voiceOn)stopVoice();mode='auto';posF=scroller.scrollTop;easeTarget=null;wake(true);}else{if(mode==='auto')mode='idle';wake(false);}
+  $('#playBtn').setAttribute('aria-pressed',v);$('#playLbl').textContent=v?'暫停':'播放';
+  $('#playIcon').innerHTML=v?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M7 5v14l12-7z"/>';
+  tally();
+}
+$('#playBtn').onclick=()=>{setPlaying(!playing);if(playing&&$('#app').classList.contains('focus'))$('#app').classList.remove('show-deck'),requestAnimationFrame(relayout);};
+$('#topBtn').onclick=()=>{setPlaying(false);jumpTo(0,false);};
+function stopAll(){setPlaying(false);if(voiceOn)stopVoice();}
+
+/* ---------- voice follow (browser speech recognition, zh-TW) ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,voiceOn=false,heardBuf='',partial='',restarts=[];
+function lev(a,b){const n=b.length;let prev=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(prev[j]+1,c[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=c;}return prev[n];}
+function follow(){
+  const said=[...(heardBuf+partial)].map(normCh).join('');
+  const tryK=(K,maxD)=>{
+    if(said.length<K||normStr.length<K)return null;
+    const tail=said.slice(-K),lo=Math.max(K,normPos-30),hi=Math.min(normStr.length,normPos+K+140);let best=null;
+    for(let e=lo;e<=hi;e++){const d=lev(tail,normStr.slice(e-K,e));if(d>maxD)continue;const back=e<normPos;if(back&&d>1)continue;
+      const pen=d+(back?.6+(normPos-e)*.05:(e-normPos)*.008);if(!best||pen<best.pen)best={e,pen};}
+    return best;
+  };
+  const b=tryK(10,3)||tryK(6,1)||tryK(4,0);
+  if(b&&b.e!==normPos){normPos=b.e;cursorOrig=origFromNorm(normPos);markDone(cursorOrig);}
+}
+function showHeard(){const t=(heardBuf+partial).trim();$('#heardText').textContent=t?t.slice(-24):'（等你開口）';}
+function setVoiceUI(on){
+  $('#voiceBtn').setAttribute('aria-pressed',on);$('#voiceLbl').textContent=on?'停止':'聲控';
+  $('#heard').hidden=!on;$('#speedWrap').hidden=on;
+  if(on){mode='voice';wake(true);}else if(mode==='voice'){mode='idle';wake(false);}
+  tally();
+}
+function startVoice(){
+  if(!SR){toast('這個瀏覽器不支援語音辨識。iPhone 請用 Safari 開，電腦請用 Chrome。');return;}
+  if(playing)setPlaying(false);
+  cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);heardBuf='';partial='';markDone(cursorOrig);showHeard();
+  voiceOn=true;restarts=[];setVoiceUI(true);startRec();
+}
+function startRec(){
+  try{
+    rec=new SR();rec.lang='zh-TW';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+    const base=heardBuf;
+    rec.onresult=e=>{let fin='',mid='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else mid+=r[0].transcript;}
+      heardBuf=(base+fin).slice(-80);partial=mid;showHeard();follow();};
+    rec.onerror=e=>{
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){voiceOn=false;toast('沒有麥克風或語音辨識權限。請到「設定 › Safari › 麥克風」允許，並確認「設定 › 一般 › 鍵盤 › 啟用聽寫」已打開。');}
+      else if(e.error==='audio-capture'){voiceOn=false;toast('找不到麥克風');}
+      else if(e.error==='network'){toast('語音辨識需要網路，請檢查連線');}
+    };
+    rec.onend=()=>{
+      if(!voiceOn){setVoiceUI(false);return;}
+      const now=Date.now();restarts=restarts.filter(t=>now-t<8000);restarts.push(now);
+      if(restarts.length>6){voiceOn=false;setVoiceUI(false);toast('語音辨識一直中斷，請再按一次「聲控」');return;}
+      heardBuf=(heardBuf+partial).slice(-80);partial='';
+      setTimeout(()=>{if(voiceOn)startRec();},120); // iOS stops on its own after pauses; pick it back up
+    };
+    rec.start();
+  }catch(err){voiceOn=false;setVoiceUI(false);toast('語音辨識啟動失敗，再試一次');}
+}
+function stopVoice(){voiceOn=false;try{rec&&rec.stop();}catch(e){}setVoiceUI(false);}
+function toggleVoice(){voiceOn?stopVoice():startVoice();}
+$('#voiceBtn').onclick=toggleVoice;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(voiceOn)stopVoice();setPlaying(false);}});
+
+/* ---------- full screen / focus mode ---------- */
+function setFocus(on){
+  const app=$('#app');app.classList.toggle('focus',on);app.classList.remove('show-deck');
+  $('#focusLbl').textContent=on?'退出':'全螢幕';
+  const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen,isFs=document.fullscreenElement||document.webkitFullscreenElement;
+  try{
+    if(on&&req&&!isFs){const r=req.call(el);r&&r.catch&&r.catch(()=>{});}
+    if(!on&&isFs){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}
+  }catch(e){}
+  setTimeout(relayout,60);
+}
+$('#focusBtn').onclick=()=>{const on=!$('#app').classList.contains('focus');setFocus(on);if(on)toast('點一下畫面可叫出控制列');};
+
+/* ---------- controls ---------- */
+function bind(id,key,fmt,after){
+  const el=$('#'+id),out=$('#o'+id.slice(1));el.value=S[key];out.textContent=fmt(S[key]);
+  el.addEventListener('input',()=>{S[key]=+el.value;out.textContent=fmt(S[key]);saveS();after&&after();});
+}
+function relayout(){if(view!=='prompt')return;const i=cursorOrig;layout();jumpTo(i,true);}
+bind('sSpeed','cpm',v=>v+' 字/分');
+bind('sFont','font',v=>v+' px',relayout);
+bind('sLh','lh',v=>(+v).toFixed(2),relayout);
+bind('sWidth','width',v=>v+'%',relayout);
+bind('sGuide','guide',v=>v+'%',relayout);
+bind('sEase','ease',v=>['','很慢','','慢','','中','','快','','很快','即時'][v]||v);
+const mir=$('#sMirror');mir.checked=S.mirror;mir.onchange=()=>{S.mirror=mir.checked;saveS();applyStyle();};
+$('#setBtn').onclick=()=>{$('#drawer').hidden=!$('#drawer').hidden;};
+$('#closeDrawer').onclick=()=>{$('#drawer').hidden=true;};
+document.addEventListener('keydown',e=>{
+  if(view!=='prompt'||e.target.closest('textarea,input'))return;
+  if(e.code==='Space'){e.preventDefault();setPlaying(!playing);}
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();S.cpm=Math.max(100,Math.min(420,S.cpm+(e.key==='ArrowUp'?10:-10)));$('#sSpeed').value=S.cpm;$('#oSpeed').textContent=S.cpm+' 字/分';saveS();}
+  else if(e.key==='v'||e.key==='V')toggleVoice();
+  else if(e.key==='f'||e.key==='F')$('#focusBtn').click();
+  else if(e.key==='Escape'&&$('#app').classList.contains('focus'))setFocus(false);
+});
+window.addEventListener('resize',()=>setTimeout(relayout,80));
+window.addEventListener('orientationchange',()=>setTimeout(relayout,300));
+
+/* ---------- misc ---------- */
+let lock=null;
+async function wake(on){try{if(on&&!lock&&navigator.wakeLock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>lock=null);}else if(!on&&lock&&mode==='idle'){await lock.release();lock=null;}}catch(e){}}
+function tally(){const t=$('#tally');t.classList.toggle('on',mode==='voice');t.classList.toggle('run',mode==='auto'&&playing);}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4200);}
+
+setView('home');
+document.fonts&&document.fonts.ready.then(relayout);
+})();
+</script>
+</body>
+</html>
