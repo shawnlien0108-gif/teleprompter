@@ -78,6 +78,12 @@ textarea{width:100%;min-height:55vh;resize:vertical;background:var(--panel);bord
 .text p{margin:0 0 .35em}
 .text p:empty{height:.5em}
 .text span{transition:color .25s}
+.text{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.flash{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:#000b;border:1px solid var(--line);border-radius:18px;padding:16px 20px;color:var(--fg);font-size:14px;opacity:0;pointer-events:none;z-index:4}
+.flash svg{width:40px;height:40px}
+.flash.show{animation:flash .7s ease-out}
+@keyframes flash{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}70%{opacity:1}100%{opacity:0}}
 .text span.done{color:var(--dim)}
 .text span.cur{box-shadow:inset 0 -.12em 0 var(--cue)}
 .text.mirror{transform:scaleX(-1)}
@@ -116,8 +122,9 @@ kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line)
 /* focus mode: hide header + deck, tap screen to bring the deck back */
 .app.focus{grid-template-rows:1fr}
 .app.focus header{display:none}
+.app.focus .prompter{grid-template-rows:1fr}
 .app.focus .deck{display:none}
-.app.focus.show-deck .deck{display:flex}
+.app.focus.show-deck .deck{display:flex;position:absolute;left:0;right:0;bottom:0;z-index:5}
 .app.focus .stage{padding-top:0}
 .exit-focus{position:absolute;top:10px;right:var(--gr);z-index:4}
 .toast{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--raise);border:1px solid var(--line);
@@ -174,6 +181,7 @@ kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line)
         <div class="scroller" id="scroller"><div class="text" id="text"></div></div>
         <div class="fade top"></div><div class="fade bot"></div>
         <div class="guide" id="guide"></div>
+        <div class="flash" id="flash" aria-hidden="true"></div>
         <div class="heard" id="heard" hidden><i class="dot"></i><span>聽到：</span><em id="heardText">（等你開口）</em></div>
         <div class="drawer" id="drawer" hidden>
           <h3>顯示設定 <button class="icon-btn" id="closeDrawer" aria-label="關閉"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></h3>
@@ -183,7 +191,7 @@ kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line)
           <label class="slider"><span>提示線位置</span><input id="sGuide" type="range" min="15" max="60" step="1"><output id="oGuide"></output></label>
           <label class="slider"><span>聲控跟隨</span><input id="sEase" type="range" min="1" max="10" step="1"><output id="oEase"></output></label>
           <label class="check">鏡像翻轉（提詞玻璃用）<input id="sMirror" type="checkbox"></label>
-          <div class="keys">點稿子上任何一個字，就從那裡開始。<br>專注模式中，點一下畫面可叫出／收起控制列。<br>電腦鍵盤：<kbd>空白</kbd> 播放 <kbd>↑</kbd><kbd>↓</kbd> 速度 <kbd>V</kbd> 聲控 <kbd>F</kbd> 專注</div>
+          <div class="keys">點一下畫面：開始／暫停（會用你上次選的播放或聲控）。<br>長按稿子上的字：從那個字開始。<br>全螢幕時，暫停就會出現控制列。<br>電腦鍵盤：<kbd>空白</kbd> 播放 <kbd>↑</kbd><kbd>↓</kbd> 速度 <kbd>V</kbd> 聲控 <kbd>F</kbd> 專注</div>
         </div>
       </div>
       <div class="deck">
@@ -354,11 +362,33 @@ scroller.addEventListener('wheel',userMoved,{passive:true});
 scroller.addEventListener('touchmove',userMoved,{passive:true});
 scroller.addEventListener('touchstart',()=>{dragged=false},{passive:true});
 function resync(){if(mode==='voice'&&performance.now()>=userUntil){cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);heardBuf='';partial='';markDone(cursorOrig);}}
-$('#stage').addEventListener('click',e=>{
-  if(e.target.closest('.drawer'))return;
-  if($('#app').classList.contains('focus')){$('#app').classList.toggle('show-deck');requestAnimationFrame(relayout);return;}
-  const s=e.target.closest('span[data-i]');if(s&&!dragged)jumpTo(+s.dataset.i,false);
+/* tap the screen = start / pause; long-press a word = start from there */
+let lastMode='auto',pressT=null,pressXY=null,longPressed=false;
+scroller.addEventListener('pointerdown',e=>{
+  longPressed=false;pressXY=[e.clientX,e.clientY];clearTimeout(pressT);
+  const s=e.target.closest('span[data-i]');if(!s)return;
+  pressT=setTimeout(()=>{longPressed=true;jumpTo(+s.dataset.i,false);flash('jump');},520);
 });
+scroller.addEventListener('pointermove',e=>{if(pressXY&&Math.hypot(e.clientX-pressXY[0],e.clientY-pressXY[1])>10)clearTimeout(pressT);});
+['pointerup','pointercancel'].forEach(t=>scroller.addEventListener(t,()=>clearTimeout(pressT)));
+scroller.addEventListener('contextmenu',e=>e.preventDefault());
+$('#stage').addEventListener('click',e=>{
+  if(e.target.closest('.drawer,.heard'))return;
+  if(longPressed){longPressed=false;return;}
+  if(dragged){dragged=false;return;}
+  if(!$('#drawer').hidden){$('#drawer').hidden=true;return;}
+  if(playing){setPlaying(false);flash('pause');}
+  else if(voiceOn){stopVoice();flash('pause');}
+  else if(lastMode==='voice'){startVoice();flash('voice');}
+  else{setPlaying(true);flash('play');}
+});
+const FLASH={play:'<path d="M8 5v14l11-7z" fill="currentColor"/>',pause:'<path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/>',
+  voice:'<rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  jump:'<path d="M5 12h12M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'};
+let flashT;
+function flash(k){const f=$('#flash');f.innerHTML='<svg viewBox="0 0 24 24">'+FLASH[k]+'</svg>'+(k==='jump'?'<span>從這裡開始</span>':'');
+  f.classList.remove('show');void f.offsetWidth;f.classList.add('show');clearTimeout(flashT);flashT=setTimeout(()=>f.classList.remove('show'),700);}
+function syncDeck(){const app=$('#app');if(app.classList.contains('focus'))app.classList.toggle('show-deck',!(playing||voiceOn));}
 
 /* ---------- auto play ---------- */
 function setPlaying(v){
@@ -366,9 +396,9 @@ function setPlaying(v){
   if(v){if(voiceOn)stopVoice();mode='auto';posF=scroller.scrollTop;easeTarget=null;wake(true);}else{if(mode==='auto')mode='idle';wake(false);}
   $('#playBtn').setAttribute('aria-pressed',v);$('#playLbl').textContent=v?'暫停':'播放';
   $('#playIcon').innerHTML=v?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M7 5v14l12-7z"/>';
-  tally();
+  if(v)lastMode='auto';tally();syncDeck();
 }
-$('#playBtn').onclick=()=>{setPlaying(!playing);if(playing&&$('#app').classList.contains('focus'))$('#app').classList.remove('show-deck'),requestAnimationFrame(relayout);};
+$('#playBtn').onclick=()=>setPlaying(!playing);
 $('#topBtn').onclick=()=>{setPlaying(false);jumpTo(0,false);};
 function stopAll(){setPlaying(false);if(voiceOn)stopVoice();}
 
@@ -393,13 +423,13 @@ function setVoiceUI(on){
   $('#voiceBtn').setAttribute('aria-pressed',on);$('#voiceLbl').textContent=on?'停止':'聲控';
   $('#heard').hidden=!on;$('#speedWrap').hidden=on;
   if(on){mode='voice';wake(true);}else if(mode==='voice'){mode='idle';wake(false);}
-  tally();
+  tally();syncDeck();
 }
 function startVoice(){
   if(!SR){toast('這個瀏覽器不支援語音辨識。iPhone 請用 Safari 開，電腦請用 Chrome。');return;}
   if(playing)setPlaying(false);
   cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);heardBuf='';partial='';markDone(cursorOrig);showHeard();
-  voiceOn=true;restarts=[];setVoiceUI(true);startRec();
+  voiceOn=true;lastMode='voice';restarts=[];setVoiceUI(true);startRec();
 }
 function startRec(){
   try{
@@ -429,7 +459,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){if(voiceOn
 
 /* ---------- full screen / focus mode ---------- */
 function setFocus(on){
-  const app=$('#app');app.classList.toggle('focus',on);app.classList.remove('show-deck');
+  const app=$('#app');app.classList.toggle('focus',on);app.classList.remove('show-deck');syncDeck();
   $('#focusLbl').textContent=on?'退出':'全螢幕';
   const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen,isFs=document.fullscreenElement||document.webkitFullscreenElement;
   try{
@@ -438,7 +468,7 @@ function setFocus(on){
   }catch(e){}
   setTimeout(relayout,60);
 }
-$('#focusBtn').onclick=()=>{const on=!$('#app').classList.contains('focus');setFocus(on);if(on)toast('點一下畫面可叫出控制列');};
+$('#focusBtn').onclick=()=>{const on=!$('#app').classList.contains('focus');setFocus(on);if(on)toast('點一下畫面開始／暫停，暫停時會出現控制列');};
 
 /* ---------- controls ---------- */
 function bind(id,key,fmt,after){
