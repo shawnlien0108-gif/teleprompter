@@ -56,6 +56,14 @@ main{min-height:0;position:relative}
 .card .meta b{font-family:var(--mono);font-weight:500;color:var(--fg)}
 .card .acts{grid-column:2;grid-row:1/3;display:flex;gap:6px}
 .card .acts .btn{padding:8px 12px;font-size:14px}
+.sync{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px}
+.sdot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
+.sdot.ok{background:#4cc38a}.sdot.busy{background:var(--cue);animation:pulse 1s infinite}.sdot.err{background:var(--live)}
+.sync-text{flex:1;min-width:0;border:0;background:none;text-align:left;color:var(--muted);font-size:14px;padding:6px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sync-panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px}
+.field{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.field input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:16px;color:var(--fg)}
+.field input:focus{border-color:var(--cue);outline:none}
 .empty{color:var(--muted);text-align:center;padding:40px 10px;line-height:1.8}
 .section-label{font-size:12px;letter-spacing:.12em;color:var(--muted)}
 .backup{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:14px}
@@ -151,6 +159,17 @@ kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line)
     <!-- home -->
     <section class="view pad" id="vHome">
       <div class="wrap">
+        <div class="sync" id="syncBar">
+          <i class="sdot" id="syncDot"></i>
+          <button class="sync-text" id="syncNow" title="立即同步"><span id="syncText">尚未開啟雲端同步</span></button>
+          <button class="btn ghost" id="syncSetBtn">設定</button>
+        </div>
+        <div class="sync-panel" id="syncPanel" hidden>
+          <label class="field">資料庫（帳號/資料庫名稱）<input id="ghRepo" placeholder="例如 joewhale/teleprompter-data" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></label>
+          <label class="field">存取金鑰<input id="ghToken" type="password" placeholder="github_pat_ 開頭的那一串" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></label>
+          <div class="row"><button class="btn primary" id="ghSave">儲存並同步</button><button class="btn ghost" id="ghOff">中斷連線</button></div>
+          <p class="note">金鑰只存在這台裝置上，不會上傳到網站。每台要同步的裝置都要設定一次。</p>
+        </div>
         <div class="section-label">我的稿件</div>
         <div class="list" id="list"></div>
         <div class="backup">
@@ -158,7 +177,7 @@ kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line)
           <label class="btn ghost" for="importIn">匯入備份</label>
           <input type="file" id="importIn" accept=".json,application/json" hidden>
         </div>
-        <p class="note">稿件存在這支手機上。加到主畫面的讀稿機和 Safari 裡的是分開存的，換手機或換開啟方式時，用「匯出備份／匯入備份」搬過去。</p>
+        <p class="note">開啟雲端同步後，稿件會存在你的 GitHub 私人資料庫，每台裝置看到的都一樣。沒有網路時會先存在本機，連上網再自動同步。</p>
       </div>
     </section>
 
@@ -190,6 +209,7 @@ kbd{font-family:var(--mono);background:var(--raise);border:1px solid var(--line)
           <label class="slider"><span>文字寬度</span><input id="sWidth" type="range" min="50" max="100" step="2"><output id="oWidth"></output></label>
           <label class="slider"><span>提示線位置</span><input id="sGuide" type="range" min="15" max="60" step="1"><output id="oGuide"></output></label>
           <label class="slider"><span>聲控跟隨</span><input id="sEase" type="range" min="1" max="10" step="1"><output id="oEase"></output></label>
+          <label class="slider"><span>防跳行</span><input id="sGuard" type="range" min="1" max="3" step="1"><output id="oGuard"></output></label>
           <label class="check">鏡像翻轉（提詞玻璃用）<input id="sMirror" type="checkbox"></label>
           <div class="keys">點一下畫面：開始／暫停（會用你上次選的播放或聲控）。<br>長按稿子上的字：從那個字開始。<br>全螢幕時，暫停就會出現控制列。<br>電腦鍵盤：<kbd>空白</kbd> 播放 <kbd>↑</kbd><kbd>↓</kbd> 速度 <kbd>V</kbd> 聲控 <kbd>F</kbd> 專注</div>
         </div>
@@ -227,12 +247,15 @@ const SAMPLE=`大家好，歡迎回到頻道。今天我們要聊的是，為什
 下一段，我們來看新手最常犯的三個錯誤。`;
 
 const phone=window.innerWidth<600;
-const S=Object.assign({cpm:240,font:phone?36:56,lh:1.5,width:phone?100:86,guide:30,mirror:false,ease:5},store.get('settings',{}));
+const S=Object.assign({cpm:240,font:phone?36:56,lh:1.5,width:phone?100:86,guide:30,mirror:false,ease:5,guard:2},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
 let docs=store.get('scripts',null);
-if(!docs){docs=[{id:uid(),title:'範例稿（可刪除）',body:SAMPLE,updated:Date.now()}];store.set('scripts',docs);}
+if(!docs){docs=[{id:'sample',title:'範例稿（可刪除）',body:SAMPLE,updated:1}];store.set('scripts',docs);}
 const saveDocs=()=>store.set('scripts',docs);
+let deleted=store.get('deleted',{});
+const saveDel=()=>store.set('deleted',deleted);
 let cur=null; // current doc
+let saveT;
 
 const countChars=t=>[...t].filter(c=>/[\p{L}\p{N}]/u.test(c)).length;
 const dur=n=>{const s=Math.round(n/S.cpm*60);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
@@ -243,7 +266,9 @@ const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 let view='home';
 function setView(v){
   if(view==='prompt'&&v!=='prompt'){stopAll();setFocus(false);}
+  const from=view;if(from==='edit'){clearTimeout(saveT);saveDocs();}
   view=v;
+  if(v!=='edit'&&(from==='edit'||v==='home'))setTimeout(()=>sync(),50);
   $('#vHome').hidden=v!=='home';$('#vEdit').hidden=v!=='edit';$('#vPrompt').hidden=v!=='prompt';
   $('#backBtn').hidden=v==='home';$('#newBtn').hidden=v!=='home';$('#editBtn').hidden=v!=='prompt';
   $('#hTitle').textContent=v==='home'?'聲控讀稿機':(cur&&cur.title)||'未命名稿件';
@@ -266,14 +291,13 @@ $('#list').addEventListener('click',e=>{
   setView(b.dataset.act==='edit'?'edit':'prompt');
 });
 $('#newBtn').onclick=()=>{cur={id:uid(),title:'',body:'',updated:Date.now()};docs.push(cur);saveDocs();setView('edit');setTimeout(()=>$('#titleIn').focus(),50);};
-$('#backBtn').onclick=()=>{if(view==='edit'&&cur&&!cur.title&&!cur.body.trim()){docs=docs.filter(d=>d!==cur);saveDocs();}setView('home');};
+$('#backBtn').onclick=()=>{if(view==='edit'&&cur&&!cur.title&&!cur.body.trim()){deleted[cur.id]=Date.now();saveDel();docs=docs.filter(d=>d!==cur);saveDocs();}setView('home');};
 $('#editBtn').onclick=()=>setView('edit');
 $('#goBtn').onclick=()=>{if(!cur.body.trim()){toast('先貼上稿子內容');return;}setView('prompt');};
-let saveT;
 function onEdit(){cur.title=$('#titleIn').value;cur.body=$('#bodyIn').value;cur.updated=Date.now();clearTimeout(saveT);saveT=setTimeout(saveDocs,300);updateStats();}
 $('#titleIn').addEventListener('input',onEdit);$('#bodyIn').addEventListener('input',onEdit);
 function updateStats(){const n=countChars(cur?cur.body:'');$('#stats').innerHTML=`<b>${n}</b> 字　以 <b>${S.cpm}</b> 字/分 約 <b>${dur(n)}</b>`;}
-$('#delBtn').onclick=()=>ask(`要刪除「${cur.title||'未命名稿件'}」嗎？刪掉就找不回來。`,()=>{docs=docs.filter(d=>d!==cur);saveDocs();setView('home');});
+$('#delBtn').onclick=()=>ask(`要刪除「${cur.title||'未命名稿件'}」嗎？已同步的裝置也會一起刪除。`,()=>{deleted[cur.id]=Date.now();saveDel();docs=docs.filter(d=>d!==cur);saveDocs();setView('home');});
 function ask(msg,yes){$('#confirmMsg').textContent=msg;$('#confirm').hidden=false;$('#cYes').onclick=()=>{$('#confirm').hidden=true;yes();};$('#cNo').onclick=()=>$('#confirm').hidden=true;}
 
 /* backup */
@@ -288,7 +312,7 @@ $('#importIn').onchange=e=>{
   r.onload=()=>{try{const j=JSON.parse(r.result);const list=Array.isArray(j)?j:j.scripts;if(!Array.isArray(list))throw 0;
     let added=0;list.forEach(x=>{if(!x||typeof x.body!=='string')return;const ex=docs.find(d=>d.id===x.id);
       if(ex){if((x.updated||0)>ex.updated)Object.assign(ex,x);}else{docs.push({id:x.id||uid(),title:String(x.title||''),body:x.body,updated:x.updated||Date.now()});added++;}});
-    saveDocs();renderList();toast(`匯入完成，新增 ${added} 份稿件`);}catch(err){toast('這個檔案不是讀稿機的備份');}
+    saveDocs();renderList();toast(`匯入完成，新增 ${added} 份稿件`);sync();}catch(err){toast('這個檔案不是讀稿機的備份');}
     e.target.value='';};
   r.readAsText(f);
 };
@@ -337,7 +361,7 @@ const origFromNorm=n=>n<=0?0:normChars[n-1].i+1;
 /* ---------- motion ---------- */
 let mode='idle',playing=false,posF=0,easeTarget=null,userUntil=0,normPos=0;
 function jumpTo(i,instant){
-  cursorOrig=i;normPos=normFromOrig(i);markDone(i);heardBuf='';partial='';
+  cursorOrig=i;normPos=normFromOrig(i);markDone(i);resetHeard();
   const t=Math.max(0,topFor(i));if(instant){scroller.scrollTop=t;posF=scroller.scrollTop;easeTarget=null;}else easeTarget=t;
 }
 let lastT=performance.now();
@@ -361,7 +385,7 @@ const userMoved=()=>{dragged=true;userUntil=performance.now()+1200;easeTarget=nu
 scroller.addEventListener('wheel',userMoved,{passive:true});
 scroller.addEventListener('touchmove',userMoved,{passive:true});
 scroller.addEventListener('touchstart',()=>{dragged=false},{passive:true});
-function resync(){if(mode==='voice'&&performance.now()>=userUntil){cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);heardBuf='';partial='';markDone(cursorOrig);}}
+function resync(){if(mode==='voice'&&performance.now()>=userUntil){cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);resetHeard();markDone(cursorOrig);}}
 /* tap the screen = start / pause; long-press a word = start from there */
 let lastMode='auto',pressT=null,pressXY=null,longPressed=false;
 scroller.addEventListener('pointerdown',e=>{
@@ -404,21 +428,58 @@ function stopAll(){setPlaying(false);if(voiceOn)stopVoice();}
 
 /* ---------- voice follow (browser speech recognition, zh-TW) ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null,voiceOn=false,heardBuf='',partial='',restarts=[];
+let rec=null,voiceOn=false,restarts=[];
+/* What the recognizer has heard, kept as normalized characters.
+   finNorm = finished phrases from earlier listening sessions, sessNorm = finished phrases in this session, midNorm = the live guess. */
+let finNorm='',sessNorm='',midNorm='',dropped=0,rawFin='',rawSess='',rawMid='';
+let resetAt=0,anchorHeard=0,pendingFar=null;
+const nstr=t=>[...t].map(normCh).join('');
+const heardCount=()=>dropped+finNorm.length+sessNorm.length+midNorm.length;
+function resetHeard(){resetAt=heardCount();anchorHeard=resetAt;pendingFar=null;rawFin='';rawSess='';rawMid='';}
+/* line guard: how far ahead the cursor may move = what you've actually said since the last step + a little slack.
+   A match further than that (the same word showing up in a later paragraph) is ignored unless it's confirmed twice by a long match. */
+const GUARD={1:{cap:14,slack:3},2:{cap:24,slack:5},3:{cap:40,slack:8}};
 function lev(a,b){const n=b.length;let prev=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(prev[j]+1,c[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=c;}return prev[n];}
 function follow(){
-  const said=[...(heardBuf+partial)].map(normCh).join('');
+  const all=finNorm+sessNorm+midNorm;
+  const said=all.slice(Math.max(0,resetAt-dropped));
+  const hc=heardCount(),g=GUARD[S.guard]||GUARD[2];
+  anchorHeard=Math.max(anchorHeard,hc-g.cap);
+  const budget=Math.max(0,hc-anchorHeard)+g.slack;
+  let far=null;
   const tryK=(K,maxD)=>{
     if(said.length<K||normStr.length<K)return null;
-    const tail=said.slice(-K),lo=Math.max(K,normPos-30),hi=Math.min(normStr.length,normPos+K+140);let best=null;
-    for(let e=lo;e<=hi;e++){const d=lev(tail,normStr.slice(e-K,e));if(d>maxD)continue;const back=e<normPos;if(back&&d>1)continue;
-      const pen=d+(back?.6+(normPos-e)*.05:(e-normPos)*.008);if(!best||pen<best.pen)best={e,pen};}
+    const tail=said.slice(-K),lo=Math.max(K,normPos-30),hi=Math.min(normStr.length,normPos+400);let best=null;
+    for(let e=lo;e<=hi;e++){
+      const d=lev(tail,normStr.slice(e-K,e));if(d>maxD)continue;
+      const ahead=e-normPos;
+      if(ahead<0&&d>1)continue;
+      if(ahead>budget){ // too far for what you've said so far
+        if(K>=10&&d<=2){const fp=d+ahead*.004;if(!far||fp<far.pen)far={e,pen:fp};}
+        continue;
+      }
+      const pen=d+(ahead<0?.6-ahead*.05:ahead*.03);
+      if(!best||pen<best.pen)best={e,pen};
+    }
     return best;
   };
   const b=tryK(10,3)||tryK(6,1)||tryK(4,0);
-  if(b&&b.e!==normPos){normPos=b.e;cursorOrig=origFromNorm(normPos);markDone(cursorOrig);}
+  if(b){
+    pendingFar=null;
+    if(b.e!==normPos){
+      if(b.e>normPos)anchorHeard+=b.e-normPos;else anchorHeard=hc;
+      normPos=b.e;cursorOrig=origFromNorm(normPos);markDone(cursorOrig);
+    }
+    return;
+  }
+  if(far){ // a real skip ahead: accept only when the next stretch of speech lands there again
+    const now=performance.now();
+    if(pendingFar&&now-pendingFar.t<4000&&hc-pendingFar.hc>=3&&far.e>=pendingFar.e&&far.e-pendingFar.e<=30){
+      normPos=far.e;anchorHeard=hc;pendingFar=null;cursorOrig=origFromNorm(normPos);markDone(cursorOrig);
+    }else if(!pendingFar||now-pendingFar.t>=4000)pendingFar={e:far.e,t:now,hc};
+  }
 }
-function showHeard(){const t=(heardBuf+partial).trim();$('#heardText').textContent=t?t.slice(-24):'（等你開口）';}
+function showHeard(){const t=(rawFin+rawSess+rawMid).trim();$('#heardText').textContent=t?t.slice(-24):'（等你開口）';}
 function setVoiceUI(on){
   $('#voiceBtn').setAttribute('aria-pressed',on);$('#voiceLbl').textContent=on?'停止':'聲控';
   $('#heard').hidden=!on;$('#speedWrap').hidden=on;
@@ -428,15 +489,15 @@ function setVoiceUI(on){
 function startVoice(){
   if(!SR){toast('這個瀏覽器不支援語音辨識。iPhone 請用 Safari 開，電腦請用 Chrome。');return;}
   if(playing)setPlaying(false);
-  cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);heardBuf='';partial='';markDone(cursorOrig);showHeard();
+  cursorOrig=idxAtGuide();normPos=normFromOrig(cursorOrig);resetHeard();markDone(cursorOrig);showHeard();
   voiceOn=true;lastMode='voice';restarts=[];setVoiceUI(true);startRec();
 }
 function startRec(){
   try{
     rec=new SR();rec.lang='zh-TW';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
-    const base=heardBuf;
+    sessNorm='';midNorm='';rawSess='';rawMid='';
     rec.onresult=e=>{let fin='',mid='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else mid+=r[0].transcript;}
-      heardBuf=(base+fin).slice(-80);partial=mid;showHeard();follow();};
+      sessNorm=nstr(fin);midNorm=nstr(mid);rawSess=fin;rawMid=mid;showHeard();follow();};
     rec.onerror=e=>{
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){voiceOn=false;toast('沒有麥克風或語音辨識權限。請到「設定 › Safari › 麥克風」允許，並確認「設定 › 一般 › 鍵盤 › 啟用聽寫」已打開。');}
       else if(e.error==='audio-capture'){voiceOn=false;toast('找不到麥克風');}
@@ -446,7 +507,8 @@ function startRec(){
       if(!voiceOn){setVoiceUI(false);return;}
       const now=Date.now();restarts=restarts.filter(t=>now-t<8000);restarts.push(now);
       if(restarts.length>6){voiceOn=false;setVoiceUI(false);toast('語音辨識一直中斷，請再按一次「聲控」');return;}
-      heardBuf=(heardBuf+partial).slice(-80);partial='';
+      finNorm+=sessNorm+midNorm;rawFin=(rawFin+rawSess+rawMid).slice(-60);sessNorm='';midNorm='';rawSess='';rawMid='';
+      if(finNorm.length>400){const cut=finNorm.length-200;finNorm=finNorm.slice(cut);dropped+=cut;}
       setTimeout(()=>{if(voiceOn)startRec();},120); // iOS stops on its own after pauses; pick it back up
     };
     rec.start();
@@ -481,6 +543,7 @@ bind('sFont','font',v=>v+' px',relayout);
 bind('sLh','lh',v=>(+v).toFixed(2),relayout);
 bind('sWidth','width',v=>v+'%',relayout);
 bind('sGuide','guide',v=>v+'%',relayout);
+bind('sGuard','guard',v=>['','嚴格','標準','寬鬆'][v]||v);
 bind('sEase','ease',v=>['','很慢','','慢','','中','','快','','很快','即時'][v]||v);
 const mir=$('#sMirror');mir.checked=S.mirror;mir.onchange=()=>{S.mirror=mir.checked;saveS();applyStyle();};
 $('#setBtn').onclick=()=>{$('#drawer').hidden=!$('#drawer').hidden;};
@@ -501,6 +564,72 @@ let lock=null;
 async function wake(on){try{if(on&&!lock&&navigator.wakeLock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>lock=null);}else if(!on&&lock&&mode==='idle'){await lock.release();lock=null;}}catch(e){}}
 function tally(){const t=$('#tally');t.classList.toggle('on',mode==='voice');t.classList.toggle('run',mode==='auto'&&playing);}
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4200);}
+
+
+/* ---------- cloud sync: one JSON file in a private GitHub repository ---------- */
+let GH=store.get('gh',null),syncing=false,syncAgain=false;
+const b64e=str=>{const b=new TextEncoder().encode(str);let bin='';for(let i=0;i<b.length;i+=0x8000)bin+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(bin);};
+const b64d=str=>{const bin=atob(str.replace(/\s/g,''));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u);};
+const canon=o=>JSON.stringify({app:'讀稿機',v:1,
+  scripts:[...(o.scripts||[])].filter(d=>d&&d.id).sort((a,b)=>a.id<b.id?-1:1).map(d=>({id:d.id,title:String(d.title||''),body:String(d.body||''),updated:d.updated||0})),
+  deleted:Object.fromEntries(Object.entries(o.deleted||{}).sort())},null,1);
+function merge(remote){
+  const del=Object.assign({},remote.deleted||{});
+  for(const [k,v] of Object.entries(deleted))del[k]=Math.max(del[k]||0,v);
+  const map=new Map();
+  for(const d of [...(remote.scripts||[]),...docs]){if(!d||!d.id)continue;const ex=map.get(d.id);if(!ex||(d.updated||0)>(ex.updated||0))map.set(d.id,d);}
+  return {scripts:[...map.values()].filter(d=>!((del[d.id]||0)>=(d.updated||0))),deleted:del};
+}
+function setSync(state,text){$('#syncDot').className='sdot '+state;$('#syncText').textContent=text;}
+const hhmm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+function syncIdle(){if(!GH)setSync('','尚未開啟雲端同步');else{const t=store.get('lastSync',0);setSync(t?'ok':'',t?'已同步 '+hhmm(t)+'（點這裡立即同步）':'尚未同步（點這裡立即同步）');}}
+function errMsg(st){return st===401?'金鑰錯誤或已過期，請重新設定':st===403?'金鑰權限不足：Contents 要設成 Read and write':st===404?'找不到資料庫：檢查名稱，或金鑰沒有開這個資料庫':'同步失敗（錯誤 '+st+'），稍後再試';}
+async function sync(manual){
+  if(!GH||view==='edit')return;
+  if(syncing){syncAgain=true;return;}
+  syncing=true;setSync('busy','同步中…');
+  const url=`https://api.github.com/repos/${GH.repo}/contents/scripts.json`;
+  const h={Authorization:'Bearer '+GH.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+  try{
+    let done=false;
+    for(let attempt=0;attempt<3&&!done;attempt++){
+      const r=await fetch(url+'?t='+Date.now(),{headers:h,cache:'no-store'});
+      let sha,remote={scripts:[],deleted:{}},remoteCanon=null;
+      if(r.ok){const j=await r.json();sha=j.sha;remote=JSON.parse(b64d(j.content||''));remoteCanon=canon(remote);}
+      else if(r.status!==404)throw {st:r.status};
+      const m=merge(remote);
+      const curId=cur&&cur.id;
+      docs=m.scripts.map(d=>({id:d.id,title:d.title||'',body:d.body||'',updated:d.updated||0}));deleted=m.deleted;
+      saveDocs();saveDel();if(curId)cur=docs.find(d=>d.id===curId)||cur;
+      const out=canon(m);
+      if(out===remoteCanon){done=true;break;}
+      const body={message:'讀稿機同步 '+new Date().toLocaleString('zh-TW'),content:b64e(out)};if(sha)body.sha=sha;
+      const p=await fetch(url,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},h),body:JSON.stringify(body)});
+      if(p.ok)done=true;else if(p.status!==409&&p.status!==422)throw {st:p.status};
+    }
+    if(!done)throw {st:409};
+    store.set('lastSync',Date.now());syncIdle();
+    if(view==='home')renderList();
+    if(manual)toast('同步完成');
+  }catch(e){
+    if(e&&e.st)setSync('err',errMsg(e.st));
+    else setSync('err',navigator.onLine===false?'目前離線，連上網路後會自動同步':'連不到 GitHub，稍後再試');
+  }finally{syncing=false;if(syncAgain){syncAgain=false;sync();}}
+}
+$('#syncNow').onclick=()=>{if(!GH){openSyncPanel();return;}sync(true);};
+function openSyncPanel(){const p=$('#syncPanel');p.hidden=!p.hidden;if(!p.hidden){$('#ghRepo').value=GH?GH.repo:'';$('#ghToken').value=GH?GH.token:'';}}
+$('#syncSetBtn').onclick=openSyncPanel;
+$('#ghSave').onclick=()=>{
+  let repo=$('#ghRepo').value.trim().replace(/^https?:\/\/github\.com\//i,'').replace(/\.git$/,'').replace(/\/+$/,'');
+  const token=$('#ghToken').value.trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){toast('資料庫格式是「帳號/資料庫名稱」，例如 joewhale/teleprompter-data');return;}
+  if(!token){toast('請貼上存取金鑰');return;}
+  GH={repo,token};store.set('gh',GH);store.set('lastSync',0);$('#syncPanel').hidden=true;sync(true);
+};
+$('#ghOff').onclick=()=>{GH=null;try{localStorage.removeItem('tp:gh');}catch(e){}$('#syncPanel').hidden=true;syncIdle();toast('已中斷雲端同步，稿件仍留在這台裝置上');};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&view==='home')sync();});
+window.addEventListener('online',()=>sync());
+syncIdle();
 
 setView('home');
 document.fonts&&document.fonts.ready.then(relayout);
